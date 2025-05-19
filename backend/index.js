@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const { authenticateToken } = require("./utilities");
 const User = require("./models/user.models");
+const Note = require("./models/note.models");
 
 //Middleware
 app.use(express.json());
@@ -66,9 +67,13 @@ app.post("/create-account", async (req, res) => {
 
   await user.save();
 
-  const accssToken = jwt.sign({ user }, process.env.JWT_SECRET, {
-    expiresIn: "360000m",
-  });
+  const accssToken = jwt.sign(
+    { _id: user._id, fullName: user.fullName, email: user.email },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "360000m",
+    }
+  );
 
   return res.json({
     error: false,
@@ -98,9 +103,17 @@ app.post("/login", async (req, res) => {
 
   if (userInfo.email == email && userInfo.password == password) {
     const user = { user: userInfo };
-    const accssToken = jwt.sign({ user }, process.env.JWT_SECRET, {
-      expiresIn: "360000m",
-    });
+    const accssToken = jwt.sign(
+      {
+        u_id: userInfo._id,
+        fullName: userInfo.fullName,
+        email: userInfo.email,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "360000m",
+      }
+    );
     return res.status(200).json({
       error: false,
       user,
@@ -111,6 +124,39 @@ app.post("/login", async (req, res) => {
     res.status(400).json({
       error: true,
       message: "Invalid Credentials",
+    });
+  }
+});
+
+// Add Note
+app.post("/add-note", authenticateToken, async (req, res) => {
+  const { title, content, tags } = req.body;
+
+  if (!title || !content) {
+    return res.status(400).json({
+      error: true,
+      message: "Mising either Title or Content",
+    });
+  }
+
+  try {
+    const note = new Note({
+      title,
+      content,
+      tags: tags || {},
+      userId: req.user._id,
+    });
+
+    await note.save();
+
+    return res.status(200).json({
+      error: false,
+      message: "Note Added",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      message: "Server Error",
     });
   }
 });
