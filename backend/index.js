@@ -161,6 +161,78 @@ app.post("/add-note", authenticateToken, async (req, res) => {
   }
 });
 
+//Edit Note
+app.put("/edit-note/:noteID", authenticateToken, async (req, res) => {
+  const noteID = req.params.noteID;
+  console.log("Note ID:", noteID);
+
+  const { title, content, tags, isPinned } = req.body;
+
+  const userId = req.user._id || req.user.id;
+
+  // console.log("User ID:", userId);
+  // console.log("Request body:", req.body);
+
+  if (!title && !content && !tags && isPinned === undefined) {
+    return res
+      .status(400)
+      .json({ error: true, message: "No update fields provided" });
+  }
+
+  try {
+    const note = await Note.findOne({ _id: noteID, userId: userId });
+
+    if (!note) {
+      return res.status(404).json({
+        error: true,
+        message: "Note not found or you don't have permission to edit it",
+      });
+    }
+
+    if (title !== undefined) note.title = title;
+    if (content !== undefined) note.content = content;
+    if (tags !== undefined) note.tags = tags;
+    if (isPinned !== undefined) note.isPinned = isPinned;
+
+    note.updatedAt = new Date();
+
+    await note.save();
+
+    return res.status(200).json({
+      error: false,
+      note,
+      message: "Note updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating note:", error);
+    return res.status(500).json({
+      error: true,
+      message: "Internal server error",
+    });
+  }
+});
+
+app.get("/get-all-notes", authenticateToken, async (req, res) => {
+  const { user } = req.user;
+
+  try {
+    const notes = await Note.find({
+      userId: user._id,
+    }).sort({ isPinned: -1 });
+
+    return res.status(200).json({
+      error: false,
+      notes,
+      message: "Fetched All Notes",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      message: "Internal Server Error",
+    });
+  }
+});
+
 app.listen(8000);
 
 module.exports = app;
