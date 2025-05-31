@@ -233,6 +233,71 @@ app.get("/get-all-notes", authenticateToken, async (req, res) => {
   }
 });
 
+//Delete Note
+app.delete("/delete-note/:noteID", authenticateToken, async (req, res) => {
+  const noteID = req.params.noteID;
+  const { user } = req.user;
+
+  try {
+    const note = await Note.findOne({ _id: noteID, userId: user._id });
+
+    if (!note) {
+      return res.status(404).json({ error: true, message: "Note not found" });
+    }
+
+    await Note.deleteOne({ _id: noteID, userId: user._id });
+
+    return res.json({
+      error: false,
+      message: "Note Deleted Successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      message: "Internal Server Error",
+    });
+  }
+});
+
+//Pin Note
+app.put("/pin-note/:noteID", authenticateToken, async (req, res) => {
+  const noteID = req.params.noteID;
+  console.log("Note ID:", noteID);
+
+  const { isPinned } = req.body;
+
+  const userId = req.user._id || req.user.id;
+
+  try {
+    const note = await Note.findOne({ _id: noteID, userId: userId });
+
+    if (!note) {
+      return res.status(404).json({
+        error: true,
+        message: "Note not found or you don't have permission to edit it",
+      });
+    }
+
+    if (isPinned !== undefined) note.isPinned = isPinned;
+
+    note.updatedAt = new Date();
+
+    await note.save();
+
+    return res.status(200).json({
+      error: false,
+      note,
+      message: "Note Pinned successfully",
+    });
+  } catch (error) {
+    console.error("Error updating note:", error);
+    return res.status(500).json({
+      error: true,
+      message: "Internal server error",
+    });
+  }
+});
+
 app.listen(8000);
 
 module.exports = app;
