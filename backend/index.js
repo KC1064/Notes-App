@@ -105,7 +105,7 @@ app.post("/login", async (req, res) => {
     const user = { user: userInfo };
     const accssToken = jwt.sign(
       {
-        u_id: userInfo._id,
+        _id: userInfo._id, 
         fullName: userInfo.fullName,
         email: userInfo.email,
       },
@@ -124,6 +124,55 @@ app.post("/login", async (req, res) => {
     res.status(400).json({
       error: true,
       message: "Invalid Credentials",
+    });
+  }
+});
+
+//Get User
+app.get("/get-user", authenticateToken, async (req, res) => {
+  try {
+    // Debug: Log what's in req.user
+    console.log("Full req.user object:", req.user);
+    console.log("req.user._id:", req.user._id);
+    console.log("req.user.u_id:", req.user.u_id);
+    
+  
+    const userId = req.user.u_id || req.user._id;
+    
+    console.log("Final userId:", userId);
+    
+    if (!userId) {
+      return res.status(400).json({
+        error: true,
+        message: "Invalid token structure - no user ID found",
+        debugInfo: req.user
+      });
+    }
+
+    const isUser = await User.findOne({ _id: userId });
+
+    if (!isUser) {
+      return res.status(401).json({
+        error: true,
+        message: "User not found"
+      });
+    }
+
+    return res.json({
+      error: false,
+      user: {
+        _id: isUser._id,
+        fullName: isUser.fullName,
+        email: isUser.email
+      },
+      message: "User fetched successfully"
+    });
+    
+  } catch (error) {
+    console.error("Error in get-user:", error);
+    return res.status(500).json({
+      error: true,
+      message: "Internal server error"
     });
   }
 });
