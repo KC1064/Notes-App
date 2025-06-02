@@ -1,5 +1,5 @@
 import axios from "axios";
-import { BASE_URL } from "./constants";
+import { BASE_URL } from "./constants"; 
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -9,16 +9,37 @@ const axiosInstance = axios.create({
   },
 });
 
+
 axiosInstance.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem("token");
-
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+    try {
+      const accessToken = localStorage.getItem("token");
+      
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+    } catch (error) {
+      console.error("Error accessing localStorage:", error);
     }
+    
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+axiosInstance.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+   
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+    
     return Promise.reject(error);
   }
 );

@@ -1,3 +1,110 @@
+// import React, { useState } from "react";
+// import Navbar from "../components/Navbar";
+// import { Link, useNavigate } from "react-router-dom";
+// import PasswordInput from "../components/PasswordInput";
+// import { validateEmail } from "../utils/helper";
+// import axiosInstance from "../utils/axiosInstance";
+
+// const Login = () => {
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [error, setError] = useState(null);
+//   const navigate = useNavigate();
+
+//   const handleLogin = async (e) => {
+//     e.preventDefault();
+//     setError(null);
+
+//     if (!validateEmail(email)) {
+//       setError("Please enter a valid email address");
+//       return;
+//     }
+
+//     if (!password) {
+//       setError("Please enter the password");
+//       return;
+//     }
+
+//     try {
+//       const response = await axiosInstance.post("/login", {
+//         email,
+//         password,
+//       });
+
+//       console.log("Login API response:", response.data);
+
+//       if (response.data && response.data.accssToken) {
+//         localStorage.setItem("token", response.data.accssToken);
+//         console.log("Login successful, navigating to dashboard...");
+//         navigate("/dashboard");
+//       } else {
+//         setError("Invalid response from server");
+//       }
+//     } catch (error) {
+//       console.error("Login error:", error);
+
+//       if (
+//         error.response &&
+//         error.response.data &&
+//         error.response.data.message
+//       ) {
+//         setError(error.response.data.message);
+//       } else {
+//         setError("Something went wrong");
+//       }
+//     }
+//   };
+
+//   return (
+//     <>
+//       <Navbar />
+//       <div className="w-full flex justify-center items-center min-h-[90vh] bg-gray-50">
+//         <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg border-[1px] border-black/35">
+//           <h2 className="text-3xl font-bold text-center text-gray-800">
+//             Login
+//           </h2>
+//           <form className="space-y-6" onSubmit={handleLogin}>
+//             <div>
+//               <input
+//                 type="text"
+//                 value={email}
+//                 onChange={(e) => setEmail(e.target.value)}
+//                 placeholder="john234@gmail.com"
+//                 className="w-full px-4 py-1 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+//               />
+//             </div>
+
+//             <PasswordInput
+//               value={password}
+//               onChange={(e) => setPassword(e.target.value)}
+//             />
+
+//             {error && <p className="text-red-500 text-sm">{error}</p>}
+
+//             <button
+//               type="submit"
+//               className="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+//             >
+//               Login
+//             </button>
+
+//             <div className="text-sm text-center text-gray-600">
+//               Not registered yet?{" "}
+//               <Link
+//                 to="/signup"
+//                 className="font-medium text-blue-600 hover:text-blue-500"
+//               >
+//                 Create an Account
+//               </Link>
+//             </div>
+//           </form>
+//         </div>
+//       </div>
+//     </>
+//   );
+// };
+
+// export default Login;
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import { Link, useNavigate } from "react-router-dom";
@@ -10,6 +117,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null);
@@ -20,21 +128,21 @@ const Login = () => {
     }
 
     if (!password) {
-      setError("Please Enter the Password");
+      setError("Please enter the password");
+      return;
     }
 
-    setError("");
-
-    //API Call
     try {
       const response = await axiosInstance.post("/login", {
         email,
         password,
       });
 
-      if (response.data && response.data.token) {
-        localStorage.setItem("token", response.data.token);
+      if (response.data && response.data.accssToken) {
+        localStorage.setItem("token", response.data.accssToken);
         navigate("/dashboard");
+      } else {
+        setError("Invalid response from server");
       }
     } catch (error) {
       if (
@@ -48,7 +156,7 @@ const Login = () => {
       }
     }
   };
-  //15323
+
   return (
     <>
       <Navbar />
@@ -72,7 +180,7 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            {error && <p className=" text-red-500 text-sm">{error}</p>}
+            {error && <p className="text-red-500 text-sm">{error}</p>}
 
             <button
               type="submit"
