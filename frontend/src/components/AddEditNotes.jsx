@@ -1,56 +1,88 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TagInput from "./TagInput";
 import { MdClose } from "react-icons/md";
+import axiosInstance from "../utils/axiosInstance";
 
-const AddEditNotes = ({ noteData, type, onClose }) => {
+const AddEditNotes = ({ data, type, getNotes, onClose }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [tags, setTags] = useState([]);
-
   const [error, setError] = useState(null);
 
-  const editNote = () => {};
+  useEffect(() => {
+    if (type === "edit" && data) {
+      setTitle(noteData.title || "");
+      setContent(noteData.content || "");
+      setTags(noteData.tags || []);
+    }
+  }, [data, type]);
 
-  const addNote = () => {};
+  const addNote = async () => {
+    console.log("Trying to add note");
+
+    try {
+      const response = await axiosInstance.post("/add-note", {
+        title,
+        content,
+        tags,
+      });
+
+      if (response.data && response.data.note) {
+        await getNotes(); // ensures fresh data is loaded
+        onClose();
+      }
+    } catch (error) {
+      if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("Failed to add note. Please try again.");
+      }
+    }
+  };
+
+  const editNote = () => {
+    // To be implemented later
+  };
 
   const handleAddNote = () => {
-    if (!title) {
+    if (!title.trim()) {
       setError("No Title Found");
       return;
     }
 
-    if (!content) {
+    if (!content.trim()) {
       setError("No Content Found");
       return;
     }
+
     setError("");
 
-    if (type == "edit") {
+    if (type === "edit") {
       editNote();
     } else {
-      addNewNote();
+      addNote();
     }
   };
 
   return (
-    <div className="realtive">
+    <div className="relative bg-white p-6 rounded-xl shadow-lg">
       <MdClose
         onClick={onClose}
-        className="absolute right-24 text-lg text-slate-400 hover:text-black"
+        className="absolute right-4 top-4 text-xl text-slate-400 hover:text-black cursor-pointer"
       />
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 mb-4">
         <label className="text-sm text-slate-400">TITLE</label>
         <input
           type="text"
-          className=" text-lg text-slate-950 outline-none bg-slate-50 p-2 rounded-2xl"
+          className="text-lg text-slate-950 outline-none bg-slate-50 p-2 rounded-2xl"
           placeholder="Meeting at 5 pm"
           value={title}
           onChange={({ target }) => setTitle(target.value)}
         />
       </div>
 
-      <div className="flex flex-col gap-2 mt-4">
+      <div className="flex flex-col gap-2 mb-4">
         <label className="text-sm text-slate-400">CONTENT</label>
         <textarea
           className="text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded-2xl"
@@ -61,21 +93,20 @@ const AddEditNotes = ({ noteData, type, onClose }) => {
         />
       </div>
 
-      <div className="mt-3">
-        <div className="text-sm text-slate-400">TAGS</div>
+      <div className="mb-4">
+        <label className="text-sm text-slate-400">TAGS</label>
         <TagInput tags={tags} setTags={setTags} />
       </div>
 
-      {/* Error message display */}
       {error && (
-        <div className="text-red-500 text-sm font-medium mt-2">{error}</div>
+        <div className="text-red-500 text-sm font-medium mb-4">{error}</div>
       )}
 
       <button
         onClick={handleAddNote}
-        className="font-medium mt-5 p-2 hover:bg-transparent w-[20%] rounded cursor-pointer hover:text-blue-600 border-blue-600 border bg-blue-500 text-white text-lg"
+        className="font-medium px-4 py-2 w-[30%] rounded cursor-pointer border border-blue-600 bg-blue-500 text-white hover:bg-transparent hover:text-blue-600 text-lg"
       >
-        Add
+        {type === "edit" ? "Update" : "Add"}
       </button>
     </div>
   );
