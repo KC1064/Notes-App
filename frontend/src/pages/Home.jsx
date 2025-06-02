@@ -124,7 +124,9 @@ const Home = () => {
   const getUserInfor = async () => {
     try {
       const response = await axiosInstance.get("/get-user");
-      setUserInfo(response.data);
+      console.log(response.data["user"]);
+
+      setUserInfo(response.data["user"]);
     } catch (error) {
       if (error.response && error.response.status === 401) {
         localStorage.clear();
@@ -135,8 +137,11 @@ const Home = () => {
 
   const getNotes = async () => {
     try {
-      const response = await axiosInstance.get("/notes");
-      setNotes(response.data);
+      const response = await axiosInstance.get("/get-all-notes");
+
+      if (response.data && response.data.notes) {
+        setNotes(response.data.notes);
+      }
     } catch (err) {
       console.error("Failed to load notes", err);
     }
