@@ -35,12 +35,37 @@ const Home = () => {
   const getNotes = async () => {
     try {
       const response = await axiosInstance.get("/get-all-notes");
-      console.log("Fetched notes:", response.data.notes); // helpful log
-      if (response.data && response.data.notes) {
+      console.log("Fetched notes response:", response.data); // Debug log
+      
+      if (response.data && !response.data.error && Array.isArray(response.data.notes)) {
         setNotes(response.data.notes);
+      } else {
+        console.error("Invalid notes data received:", response.data);
+        setNotes([]);
       }
     } catch (err) {
-      console.error("Failed to load notes", err);
+      console.error("Failed to load notes:", err);
+      if (err.response && err.response.status === 401) {
+        localStorage.clear();
+        navigate("/login");
+      }
+      setNotes([]);
+    }
+  };
+
+  const pinNote = async (noteId, isPinned) => {
+    try {
+      const response = await axiosInstance.put(`/pin-note/${noteId}`, {
+        isPinned: !isPinned,
+      });
+
+      console.log("Pin note response:", response.data);
+
+      if (response.data && !response.data.error) {
+        await getNotes();
+      }
+    } catch (error) {
+      console.error("Error pinning note:", error);
     }
   };
 
@@ -49,6 +74,7 @@ const Home = () => {
     getNotes();
     return () => {
       setUserInfo(null);
+      setNotes([]);
     };
   }, []);
 
@@ -56,7 +82,7 @@ const Home = () => {
     <>
       <Navbar userInfo={userInfo} />
       <div className="container mx-auto">
-        <div className="grid grid-cols-3 gap-4 mt-4">
+        <div className="grid grid-cols-3 gap-4 mt-4 ml-4">
           {notes.map((note) => (
             <NoteCard
               key={note._id}
@@ -69,7 +95,7 @@ const Home = () => {
                 SetOpenModal({ isShown: true, type: "edit", data: note })
               }
               onDelete={() => {}}
-              onPinNote={() => {}}
+              onPinNote={() => pinNote(note._id, note.isPinned)}
             />
           ))}
         </div>

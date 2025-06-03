@@ -184,7 +184,7 @@ app.post("/add-note", authenticateToken, async (req, res) => {
   if (!title || !content) {
     return res.status(400).json({
       error: true,
-      message: "Mising either Title or Content",
+      message: "Missing either Title or Content",
     });
   }
 
@@ -192,17 +192,19 @@ app.post("/add-note", authenticateToken, async (req, res) => {
     const note = new Note({
       title,
       content,
-      tags: tags || {},
+      tags: Array.isArray(tags) ? tags : [],
       userId: req.user._id,
     });
 
-    await note.save();
+    const savedNote = await note.save();
 
     return res.status(200).json({
       error: false,
-      message: "Note Added",
+      note: savedNote,
+      message: "Note Added Successfully",
     });
   } catch (error) {
+    console.error("Error adding note:", error);
     return res.status(500).json({
       error: true,
       message: "Server Error",
@@ -262,11 +264,11 @@ app.put("/edit-note/:noteID", authenticateToken, async (req, res) => {
 });
 
 app.get("/get-all-notes", authenticateToken, async (req, res) => {
-  const { user } = req.user;
+  const userId = req.user._id;
 
   try {
     const notes = await Note.find({
-      userId: user._id,
+      userId: userId,
     }).sort({ isPinned: -1 });
 
     return res.status(200).json({
@@ -275,6 +277,7 @@ app.get("/get-all-notes", authenticateToken, async (req, res) => {
       message: "Fetched All Notes",
     });
   } catch (error) {
+    console.error("Error fetching notes:", error);
     return res.status(500).json({
       error: true,
       message: "Internal Server Error",

@@ -11,14 +11,14 @@ const AddEditNotes = ({ data, type, getNotes, onClose }) => {
 
   useEffect(() => {
     if (type === "edit" && data) {
-      setTitle(noteData.title || "");
-      setContent(noteData.content || "");
-      setTags(noteData.tags || []);
+      setTitle(data.title || "");
+      setContent(data.content || "");
+      setTags(data.tags || []);
     }
   }, [data, type]);
 
   const addNote = async () => {
-    console.log("Trying to add note");
+    console.log("Trying to add note with data:", { title, content, tags });
 
     try {
       const response = await axiosInstance.post("/add-note", {
@@ -27,11 +27,16 @@ const AddEditNotes = ({ data, type, getNotes, onClose }) => {
         tags,
       });
 
-      if (response.data && response.data.note) {
+      console.log("Add note response:", response.data);
+
+      if (response.data && !response.data.error) {
         await getNotes(); // ensures fresh data is loaded
         onClose();
+      } else {
+        setError(response.data.message || "Failed to add note");
       }
     } catch (error) {
+      console.error("Error adding note:", error);
       if (error.response?.data?.message) {
         setError(error.response.data.message);
       } else {
@@ -40,8 +45,30 @@ const AddEditNotes = ({ data, type, getNotes, onClose }) => {
     }
   };
 
-  const editNote = () => {
-    // To be implemented later
+  const editNote = async () => {
+    try {
+      const response = await axiosInstance.put(`/edit-note/${data._id}`, {
+        title,
+        content,
+        tags,
+      });
+
+      console.log("Edit note response:", response.data);
+
+      if (response.data && !response.data.error) {
+        await getNotes();
+        onClose();
+      } else {
+        setError(response.data.message || "Failed to update note");
+      }
+    } catch (error) {
+      console.error("Error updating note:", error);
+      if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("Failed to update note. Please try again.");
+      }
+    }
   };
 
   const handleAddNote = () => {

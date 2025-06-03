@@ -19,8 +19,10 @@ const NoteCard = ({
           <h6 className="text-lg font-medium">{title}</h6> 
           <span className="text-sm text-slate-500">{date}</span>
         </div>
-        <MdOutlinePushPin className={`${!isPinned ? "text-blue-600":"text-slate-500"}`} onClick={onPinNote} />
-
+        <MdOutlinePushPin 
+          className={`text-xl cursor-pointer transition-all duration-200 ${isPinned ? "text-blue-600 rotate-45" : "text-slate-500 hover:text-blue-600"}`} 
+          onClick={onPinNote} 
+        />
       </div>
 
       <p className="text-sm text-slate-600 mt-2">{content?.slice(0, 60)}</p>
