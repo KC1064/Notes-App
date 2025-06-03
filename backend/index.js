@@ -105,7 +105,7 @@ app.post("/login", async (req, res) => {
     const user = { user: userInfo };
     const accssToken = jwt.sign(
       {
-        _id: userInfo._id, 
+        _id: userInfo._id,
         fullName: userInfo.fullName,
         email: userInfo.email,
       },
@@ -135,17 +135,16 @@ app.get("/get-user", authenticateToken, async (req, res) => {
     console.log("Full req.user object:", req.user);
     console.log("req.user._id:", req.user._id);
     console.log("req.user.u_id:", req.user.u_id);
-    
-  
+
     const userId = req.user.u_id || req.user._id;
-    
+
     console.log("Final userId:", userId);
-    
+
     if (!userId) {
       return res.status(400).json({
         error: true,
         message: "Invalid token structure - no user ID found",
-        debugInfo: req.user
+        debugInfo: req.user,
       });
     }
 
@@ -154,7 +153,7 @@ app.get("/get-user", authenticateToken, async (req, res) => {
     if (!isUser) {
       return res.status(401).json({
         error: true,
-        message: "User not found"
+        message: "User not found",
       });
     }
 
@@ -163,16 +162,15 @@ app.get("/get-user", authenticateToken, async (req, res) => {
       user: {
         _id: isUser._id,
         fullName: isUser.fullName,
-        email: isUser.email
+        email: isUser.email,
       },
-      message: "User fetched successfully"
+      message: "User fetched successfully",
     });
-    
   } catch (error) {
     console.error("Error in get-user:", error);
     return res.status(500).json({
       error: true,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 });
@@ -288,22 +286,26 @@ app.get("/get-all-notes", authenticateToken, async (req, res) => {
 //Delete Note
 app.delete("/delete-note/:noteID", authenticateToken, async (req, res) => {
   const noteID = req.params.noteID;
-  const { user } = req.user;
+  const userId = req.user._id;
 
   try {
-    const note = await Note.findOne({ _id: noteID, userId: user._id });
+    const note = await Note.findOne({ _id: noteID, userId: userId });
 
     if (!note) {
-      return res.status(404).json({ error: true, message: "Note not found" });
+      return res.status(404).json({
+        error: true,
+        message: "Note not found or you don't have permission to delete it",
+      });
     }
 
-    await Note.deleteOne({ _id: noteID, userId: user._id });
+    await Note.deleteOne({ _id: noteID, userId: userId });
 
     return res.json({
       error: false,
       message: "Note Deleted Successfully",
     });
   } catch (error) {
+    console.error("Error deleting note:", error);
     return res.status(500).json({
       error: true,
       message: "Internal Server Error",
@@ -343,6 +345,41 @@ app.put("/pin-note/:noteID", authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating note:", error);
+    return res.status(500).json({
+      error: true,
+      message: "Internal server error",
+    });
+  }
+});
+
+//search notes
+app.get("/search-note", authenticateToken, async (req, res) => {
+  const userId = req.user._id;
+  const { query } = req.query;
+
+  if (!query) {
+    return res
+      .status(400)
+      .json({ error: true, message: "Search Query is required" });
+  }
+
+  try {
+    const matchingNotes = await Note.find({
+      userId: userId,
+      $or: [
+        { title: { $regex: new RegExp(query, "i") } },
+        { content: { $regex: new RegExp(query, "i") } },
+        { tags: { $in: [new RegExp(query, "i")] } }
+      ],
+    }).sort({ isPinned: -1 });
+
+    return res.json({
+      error: false,
+      notes: matchingNotes,
+      message: "Notes matching the search query retrieved successfully",
+    });
+  } catch (error) {
+    console.error("Error searching notes:", error);
     return res.status(500).json({
       error: true,
       message: "Internal server error",
