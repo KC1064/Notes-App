@@ -3,7 +3,7 @@ import TagInput from "./TagInput";
 import { MdClose } from "react-icons/md";
 import axiosInstance from "../utils/axiosInstance";
 
-const AddEditNotes = ({ data, type, getNotes, onClose }) => {
+const AddEditNotes = ({ data, type, getNotes, onClose, showToastMessage }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [tags, setTags] = useState([]);
@@ -30,6 +30,7 @@ const AddEditNotes = ({ data, type, getNotes, onClose }) => {
       console.log("Add note response:", response.data);
 
       if (response.data && !response.data.error) {
+        showToastMessage("Note Added Successfully");
         await getNotes(); // ensures fresh data is loaded
         onClose();
       } else {
