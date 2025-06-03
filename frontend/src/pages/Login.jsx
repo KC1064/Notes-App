@@ -1,110 +1,3 @@
-// import React, { useState } from "react";
-// import Navbar from "../components/Navbar";
-// import { Link, useNavigate } from "react-router-dom";
-// import PasswordInput from "../components/PasswordInput";
-// import { validateEmail } from "../utils/helper";
-// import axiosInstance from "../utils/axiosInstance";
-
-// const Login = () => {
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [error, setError] = useState(null);
-//   const navigate = useNavigate();
-
-//   const handleLogin = async (e) => {
-//     e.preventDefault();
-//     setError(null);
-
-//     if (!validateEmail(email)) {
-//       setError("Please enter a valid email address");
-//       return;
-//     }
-
-//     if (!password) {
-//       setError("Please enter the password");
-//       return;
-//     }
-
-//     try {
-//       const response = await axiosInstance.post("/login", {
-//         email,
-//         password,
-//       });
-
-//       console.log("Login API response:", response.data);
-
-//       if (response.data && response.data.accssToken) {
-//         localStorage.setItem("token", response.data.accssToken);
-//         console.log("Login successful, navigating to dashboard...");
-//         navigate("/dashboard");
-//       } else {
-//         setError("Invalid response from server");
-//       }
-//     } catch (error) {
-//       console.error("Login error:", error);
-
-//       if (
-//         error.response &&
-//         error.response.data &&
-//         error.response.data.message
-//       ) {
-//         setError(error.response.data.message);
-//       } else {
-//         setError("Something went wrong");
-//       }
-//     }
-//   };
-
-//   return (
-//     <>
-//       <Navbar />
-//       <div className="w-full flex justify-center items-center min-h-[90vh] bg-gray-50">
-//         <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg border-[1px] border-black/35">
-//           <h2 className="text-3xl font-bold text-center text-gray-800">
-//             Login
-//           </h2>
-//           <form className="space-y-6" onSubmit={handleLogin}>
-//             <div>
-//               <input
-//                 type="text"
-//                 value={email}
-//                 onChange={(e) => setEmail(e.target.value)}
-//                 placeholder="john234@gmail.com"
-//                 className="w-full px-4 py-1 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-//               />
-//             </div>
-
-//             <PasswordInput
-//               value={password}
-//               onChange={(e) => setPassword(e.target.value)}
-//             />
-
-//             {error && <p className="text-red-500 text-sm">{error}</p>}
-
-//             <button
-//               type="submit"
-//               className="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-//             >
-//               Login
-//             </button>
-
-//             <div className="text-sm text-center text-gray-600">
-//               Not registered yet?{" "}
-//               <Link
-//                 to="/signup"
-//                 className="font-medium text-blue-600 hover:text-blue-500"
-//               >
-//                 Create an Account
-//               </Link>
-//             </div>
-//           </form>
-//         </div>
-//       </div>
-//     </>
-//   );
-// };
-
-// export default Login;
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import { Link, useNavigate } from "react-router-dom";
@@ -160,45 +53,55 @@ const Login = () => {
   return (
     <>
       <Navbar />
-      <div className="w-full flex justify-center items-center min-h-[90vh] bg-gray-50">
-        <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg border-[1px] border-black/35">
-          <h2 className="text-3xl font-bold text-center text-gray-800">
-            Login
-          </h2>
-          <form className="space-y-6" onSubmit={handleLogin}>
-            <div>
-              <input
-                type="text"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="john234@gmail.com"
-                className="w-full px-4 py-1 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="w-full max-w-md bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+          <div className="p-8">
+            <h2 className="text-4xl font-extrabold text-center text-gray-800 mb-8">
+              Welcome Back!
+            </h2>
+            <form className="space-y-6" onSubmit={handleLogin}>
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Email Address
+                </label>
+                <input
+                  type="text"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="john234@example.com"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition duration-200"
+                />
+              </div>
+
+              <PasswordInput
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
-            </div>
 
-            <PasswordInput
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+              {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
 
-            <button
-              type="submit"
-              className="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Login
-            </button>
-
-            <div className="text-sm text-center text-gray-600">
-              Not registered yet?{" "}
-              <Link
-                to="/signup"
-                className="font-medium text-blue-600 hover:text-blue-500"
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out transform hover:scale-105"
               >
-                Create an Account
-              </Link>
-            </div>
-          </form>
+                Login to Your Account
+              </button>
+
+              <p className="text-center text-sm text-gray-600 mt-6">
+                Don't have an account?{" "}
+                <Link
+                  to="/signup"
+                  className="font-semibold text-blue-600 hover:text-blue-800 transition duration-200"
+                >
+                  Sign Up Here
+                </Link>
+              </p>
+            </form>
+          </div>
         </div>
       </div>
     </>
